@@ -1,18 +1,31 @@
 <template>
-  <img alt="Vue logo" src="./assets/logo.png">
-  <AButton type="primary" label="Testsss"></AButton>
+  <o-map v-if="token !== ''" :token="token"></o-map>
 </template>
 
 <script>
-import AButton from './components/atoms/Button';
+import FrontendAPI from '@/api'
+import oMap from './components/organisms/oMap'
 
 export default {
   name: 'App',
+  data() {
+    return {
+      token: '',
+    }
+  },
+  mounted() {
+    new FrontendAPI().getToken().then((d) => {
+      this.token = d.data.data
+    })
+  },
   components: {
-    AButton
-  }
+    oMap,
+  },
 }
 </script>
 
 <style>
+#app {
+  height: 100%;
+}
 </style>

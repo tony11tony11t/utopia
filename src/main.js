@@ -1,5 +1,14 @@
 import { createApp } from 'vue'
 import App from './App.vue'
-import 'ant-design-vue/dist/antd.css';
+import UIComponents from './UIComponents.vue'
+import 'ant-design-vue/dist/antd.css'
 
-createApp(App).mount('#app')
+/**
+ * main component
+ */
+// createApp(App).mount('#app');
+
+/**
+ * ui library's components
+ */
+createApp(UIComponents).mount('#app')

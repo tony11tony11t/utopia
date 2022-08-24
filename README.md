@@ -1,24 +1,8 @@
 # utopia
 
 ## Project setup
-```
-yarn install
-```
+1. make sure vscode install stylelint, prettier and eslint plugins
+2. yarn
+3. yarn dev
 
-### Compiles and hot-reloads for development
-```
-yarn serve
-```
-
-### Compiles and minifies for production
-```
-yarn build
-```
-
-### Lints and fixes files
-```
-yarn lint
-```
-
-### Customize configuration
-See [Configuration Reference](https://cli.vuejs.org/config/).
+## works recorder

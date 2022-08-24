@@ -3,38 +3,34 @@
   "version": "0.1.0",
   "private": true,
   "scripts": {
-    "dev": "vue-cli-service serve",
     "build": "vue-cli-service build",
     "lint": "vue-cli-service lint",
-    "storybook": "start-storybook -p 6006",
-    "build-storybook": "build-storybook"
+    "dev": "vue-cli-service serve"
   },
   "dependencies": {
     "ant-design-vue": "^3.2.11",
+    "axios": "^0.27.2",
     "core-js": "^3.8.3",
     "vue": "^3.2.13"
   },
   "devDependencies": {
     "@babel/core": "^7.12.16",
     "@babel/eslint-parser": "^7.12.16",
-    "@storybook/addon-actions": "^6.5.10",
-    "@storybook/addon-essentials": "^6.5.10",
-    "@storybook/addon-interactions": "^6.5.10",
-    "@storybook/addon-links": "^6.5.10",
-    "@storybook/builder-webpack5": "^6.5.10",
-    "@storybook/manager-webpack5": "^6.5.10",
-    "@storybook/testing-library": "^0.0.13",
-    "@storybook/vue3": "^6.5.10",
     "@vue/cli-plugin-babel": "~5.0.0",
     "@vue/cli-plugin-eslint": "~5.0.0",
     "@vue/cli-service": "~5.0.0",
+    "@vue/eslint-config-airbnb": "^6.0.0",
+    "@vue/eslint-config-prettier": "^7.0.0",
     "babel-loader": "^8.2.5",
     "eslint": "^7.32.0",
+    "eslint-plugin-import": "^2.25.3",
     "eslint-plugin-vue": "^8.0.3",
+    "eslint-plugin-vuejs-accessibility": "^1.1.0",
     "node-sass": "^7.0.1",
     "postcss": "^8.4.16",
     "postcss-html": "^1.5.0",
     "postcss-scss": "^4.0.4",
+    "prettier": "^2.7.1",
     "sass-loader": "^13.0.2",
     "stylelint": "^14.9.1",
     "stylelint-config-recommended-vue": "^1.4.0",
@@ -47,14 +43,25 @@
     "env": {
       "node": true
     },
+    "ignorePatterns": [
+      "**/public/**/*.js"
+    ],
     "extends": [
       "plugin:vue/vue3-essential",
-      "eslint:recommended"
+      "@vue/airbnb",
+      "@vue/prettier"
     ],
     "parserOptions": {
       "parser": "@babel/eslint-parser"
     },
-    "rules": {}
+    "rules": {
+      "no-restricted-exports": "off",
+      "semi": "off",
+      "no-unused-vars": "off"
+    },
+    "globals": {
+      "google": true
+    }
   },
   "browserslist": [
     "> 1%",
