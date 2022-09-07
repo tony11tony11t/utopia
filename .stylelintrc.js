@@ -19,4 +19,13 @@ module.exports = {
       customSyntax: 'postcss-html',
     },
   ],
+  rules: {
+    'declaration-colon-newline-after': null,
+    'color-function-notation': 'legacy',
+    'alpha-value-notation': 'number',
+    'string-quotes': "single",
+    'at-rule-no-unknown': null,
+    'indentation': null,
+    'no-descending-specificity': null
+  }
 };

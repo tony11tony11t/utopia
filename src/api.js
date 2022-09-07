@@ -5,8 +5,7 @@ const URL = `${process.env.VUE_APP_SERVER_HOST}:${process.env.VUE_APP_SERVER_POR
 export default function frontendAPI() {
   this.getToken = (
     data = {
-      name: 'testName2',
-      mail: 'testMail2',
+      guid: 'Gosj99BJCk-GzcNcq9VC_Q',
     }
   ) => axios.post(`${URL}/api/user/token`, data)
 
