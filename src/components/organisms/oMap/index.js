@@ -1,1 +1,1 @@
-export { default } from './oMap.vue';
+export { default } from './oMap.vue'
