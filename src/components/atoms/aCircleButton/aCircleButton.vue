@@ -21,8 +21,16 @@ export default {
           label: '錄音',
           src: require('@/assets/icons/record.svg'),
         },
+        'pause': {
+          label: '暫停',
+          src: require('@/assets/icons/pause.svg'),
+        },
         'send': {
           label: '送出',
+          src: require('@/assets/icons/send.svg'),
+        },
+        'start': {
+          label: '',
           src: require('@/assets/icons/send.svg'),
         },
       },
