@@ -7,6 +7,7 @@
       :contact="contact"
       :notes="dots"
     />
+    <mSiriWave />
     <div lass="m-phone-call__bottom">
       <aCircleButton type="phone" :onClick="onClick" />
       <img
@@ -24,6 +25,7 @@ import TextPlugin from 'gsap/TextPlugin'
 import aStoryHeader from '@/components/atoms/aStoryHeader'
 import aCircleButton from '@/components/atoms/aCircleButton'
 import aCrossBg from '../../atoms/aCrossBg/aCrossBg.vue'
+import mSiriWave from '../mSiriWave/mSiriWave.vue'
 
 export default {
   data() {
@@ -47,7 +49,7 @@ export default {
     })
   },
   props: ['contact', 'onClick'],
-  components: { aStoryHeader, aCircleButton, aCrossBg },
+  components: { aStoryHeader, aCircleButton, aCrossBg, mSiriWave },
 }
 </script>
 <style lang="scss" scoped>
