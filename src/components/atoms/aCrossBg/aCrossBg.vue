@@ -25,7 +25,7 @@ export default {
 </script>
 <style lang="scss" scoped>
 .a-cross-bg {
-  position: absolute;
+  position: fixed;
   height: 100vh;
   width: 100%;
   top: 0;
