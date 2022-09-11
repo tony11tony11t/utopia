@@ -1,6 +1,6 @@
 import axios from 'axios'
 
-const URL = `${process.env.VUE_APP_SERVER_HOST}:${process.env.VUE_APP_SERVER_PORT}`
+const URL = `${process.env.VUE_APP_SERVER_HOST}`
 
 export default function frontendAPI() {
   this.getToken = (
