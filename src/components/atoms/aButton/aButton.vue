@@ -30,6 +30,10 @@ export default {
           label: '確認',
           src: require('@/assets/icons/check.svg'),
         },
+        'forward': {
+          label: '前往',
+          src: require('@/assets/icons/forward.svg'),
+        },
       },
     }
   },
