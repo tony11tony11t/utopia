@@ -22,6 +22,7 @@ export default {
       value: '',
     }
   },
+  props: ['onInputChange'],
   methods: {
     autoGrow(el) {
       this.$refs.textarea.style.height = '5px'
@@ -30,6 +31,7 @@ export default {
     handleInput(e) {
       this.autoGrow(e.target)
       this.value = e.target.value
+      this.onInputChange(e.target.value)
     },
   },
   mounted() {
