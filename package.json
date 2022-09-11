@@ -12,6 +12,7 @@
     "axios": "^0.27.2",
     "core-js": "^3.8.3",
     "gsap": "^3.11.1",
+    "p5": "^1.4.2",
     "siriwave": "^2.3.0",
     "vue": "^3.2.13"
   },
@@ -66,7 +67,8 @@
       "vuejs-accessibility/form-control-has-label": "off",
       "no-inner-declarations": "off",
       "import/no-dynamic-require": "off",
-      "no-use-before-define": "off"
+      "no-use-before-define": "off",
+      "no-param-reassign": "off"
     },
     "globals": {
       "google": true
