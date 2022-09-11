@@ -1,13 +1,13 @@
 <template>
   <div class="m-map-info" ref="m-map-info">
-    <img src="../../../assets/bgNode1.png" alt="bg" ref="bottom-bg" />
+    <img :src="bgSrc" alt="bg" ref="bottom-bg" />
     <div class="m-map-info__info" ref="info">
       <div class="m-map-info__arrow" ref="arrow">
         <div class="m-map-info__arrow-left" ref="arrow-left"></div>
         <div class="m-map-info__arrow-right" ref="arrow-right"></div>
       </div>
       <p class="m-map-info__info-text">{{ title }}</p>
-      <p class="m-map-info__info-text-en">{{ titleEn }}</p>
+      <p class="m-map-info__info-text-en">aaaaaaaaaaaaaaaaaaaaa</p>
       <img
         svg-inline
         class="m-map-info__svg-line"
@@ -31,16 +31,13 @@
         alt="img"
       />
       <aButton
-        type="check"
+        :type="type"
         class="m-map-info__info-button"
         :onClick="handleClick"
       />
-      <img
-        svg-inline
-        class="m-map-info__svg-reverse-line"
-        src="../../../assets/descriptionHeaderDivide.svg"
-        alt="line"
-      />
+      <p v-if="type === 'forward'" class="m-map-info__tips">
+        離地點太遠，請繼續移動
+      </p>
     </div>
   </div>
 </template>
@@ -56,9 +53,11 @@ export default {
       titleEn: '',
       message: '',
       isOpen: false,
+      type: 'forward',
+      bgSrc: require('@/assets/bgNormal.png'),
     }
   },
-  props: ['mark', 'onClick'],
+  props: ['mark', 'onClick', 'distance'],
   components: {
     aButton,
   },
@@ -69,7 +68,7 @@ export default {
         this.titleEn = nextMark.title
         this.message = nextMark.message
         gsap.to(this.$refs['m-map-info'], {
-          y: -80,
+          y: -110,
         })
         gsap.to(this.$refs.arrow, {
           opacity: 1,
@@ -91,27 +90,33 @@ export default {
         Draggable.get(this.$refs['m-map-info']).disable()
       }
     },
+    distance(nextDistance) {
+      this.type = nextDistance > 20 ? 'forward' : 'check'
+    },
   },
   methods: {
     handleClick() {
-      this.DragInfoAnimation('hide', this.onClick)
+      this.DragInfoAnimation(
+        'hide',
+        this.type === 'check' ? this.onClick : null
+      )
     },
     DragInfoAnimation(action, onComplete) {
       const Dictionary = {
         show: {
           y: (window.innerHeight - 100) * -1,
-          paddingTop: 80,
-          maskHeight: '0%',
-          arrowLeftRotate: 15,
-          arrowRightRotate: -15,
+          paddingTop: 60,
+          maskHeight: '1%',
+          arrowLeftRotate: 25,
+          arrowRightRotate: -25,
           arrowTop: '-20px',
         },
         hide: {
-          y: -80,
+          y: -110,
           paddingTop: 100,
-          maskHeight: '95%',
-          arrowLeftRotate: -15,
-          arrowRightRotate: 15,
+          maskHeight: '120%',
+          arrowLeftRotate: -25,
+          arrowRightRotate: 25,
           arrowTop: '-40px',
         },
       }
@@ -189,7 +194,7 @@ export default {
 <style lang="scss" scoped>
 .m-map-info {
   width: 100%;
-  height: 100vh;
+  height: 100%;
   position: fixed;
   top: calc(100% - 100px);
   z-index: 1;
@@ -197,6 +202,7 @@ export default {
 
   img {
     width: 100%;
+    height: 100%;
     position: absolute;
     mask: radial-gradient(
       550% var(--mask-height) at top,
@@ -218,12 +224,14 @@ export default {
       font-family: 'Glow Sans TC', sans-serif;
       font-style: normal;
       font-weight: 500;
-      font-size: 24px;
-      line-height: 26px;
-      letter-spacing: 0.3em;
-      color: #ff8133;
+      font-size: 18px;
+      line-height: 24px;
       text-align: center;
-      margin-bottom: 6px;
+      letter-spacing: 0.26em;
+      color: #ff8133;
+      margin: 0 auto 6px;
+      width: 80%;
+      word-break: break-all;
 
       &-en {
         font-family: Montserrat, sans-serif;
@@ -235,7 +243,9 @@ export default {
         letter-spacing: 0.1em;
         color: #ffc499;
         transform: scaleY(-1);
-        margin: 0;
+        margin: 0 auto 6px;
+        width: 80%;
+        word-break: break-all;
       }
     }
 
@@ -297,7 +307,8 @@ export default {
       width: 25px;
       height: 3px;
       border-radius: 3px;
-      transform: rotate(-15deg) translateX(3px);
+      transform: rotate(-25deg) translateX(4px);
+      transform-origin: left;
     }
 
     &-right {
@@ -307,7 +318,8 @@ export default {
       width: 25px;
       height: 3px;
       border-radius: 3px;
-      transform: rotate(15deg) translateX(-3px);
+      transform: rotate(25deg) translateX(-4px);
+      transform-origin: right;
     }
   }
 
@@ -340,14 +352,19 @@ export default {
         right: -7.5px;
       }
     }
+  }
 
-    &-reverse-line {
-      left: 0;
-      width: 100%;
-      position: absolute;
-      bottom: 5px;
-      transform: scale(-1);
-    }
+  &__tips {
+    font-weight: 500;
+    font-size: 13px;
+    line-height: 20px;
+    text-align: center;
+    letter-spacing: 0.1em;
+    color: #cfcfcf;
+    position: absolute;
+    margin: 0;
+    bottom: 15px;
+    width: 100%;
   }
 }
 </style>

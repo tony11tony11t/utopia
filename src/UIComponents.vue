@@ -55,7 +55,6 @@ import { Col, Row } from 'ant-design-vue'
 import FrontendAPI from '@/api'
 import aButton from './components/atoms/aButton'
 import aCircleButton from './components/atoms/aCircleButton'
-import oAudioRecorder from './components/organisms/oAudioRecorder'
 import AStoryHeader from './components/atoms/aStoryHeader'
 
 export default {
@@ -91,7 +90,6 @@ export default {
     aCol: Col,
     aButton,
     aCircleButton,
-    oAudioRecorder,
     AStoryHeader,
   },
 }

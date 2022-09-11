@@ -1,6 +1,6 @@
 <template>
   <div class="m-phone-call" ref="m-phone-call">
-    <aCrossBg />
+    <aP5CrossBg />
     <aStoryHeader
       class="m-phone-call__header"
       type="來電"
@@ -24,7 +24,7 @@ import gsap from 'gsap'
 import TextPlugin from 'gsap/TextPlugin'
 import aStoryHeader from '@/components/atoms/aStoryHeader'
 import aCircleButton from '@/components/atoms/aCircleButton'
-import aCrossBg from '../../atoms/aCrossBg/aCrossBg.vue'
+import aP5CrossBg from '../../atoms/aP5CrossBg'
 import mSiriWave from '../mSiriWave/mSiriWave.vue'
 
 export default {
@@ -49,7 +49,7 @@ export default {
     })
   },
   props: ['contact', 'onClick'],
-  components: { aStoryHeader, aCircleButton, aCrossBg, mSiriWave },
+  components: { aStoryHeader, aCircleButton, aP5CrossBg, mSiriWave },
 }
 </script>
 <style lang="scss" scoped>

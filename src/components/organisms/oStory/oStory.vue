@@ -6,7 +6,7 @@
         'backgroundImage': `url(${require(`@/assets/bgNode${id}.png`)})`,
       }"
     ></div>
-    <aCrossBg disableBg="true" />
+    <aP5CrossBg :disableBg="true" :size="0.5" />
     <aStoryHeader
       class="o-story__header"
       type="通訊中"
@@ -76,12 +76,12 @@
       />
     </div>
   </div>
+  <audio ref="audio" :src="audioSrc" autoPlay muted></audio>
 </template>
 <script>
 import gsap from 'gsap'
 import FrontendAPI from '@/api'
 import aStoryHeader from '@/components/atoms/aStoryHeader'
-import aCrossBg from '@/components/atoms/aCrossBg/aCrossBg.vue'
 import mRecord from '@/components/molecules/mRecord'
 import mSend from '@/components/molecules/mSend'
 import aTextarea from '@/components/atoms/aTextarea'
@@ -93,6 +93,7 @@ import mKnob from '@/components/molecules/mKnob'
 import aButton from '@/components/atoms/aButton'
 import aOptionButton from '@/components/atoms/aOptionButton'
 import mOptionButtonGroup from '@/components/molecules/mOptionButtonGroup'
+import aP5CrossBg from '@/components/atoms/aP5CrossBg'
 import aInput from '../../atoms/aInput/aInput.vue'
 
 export default {
@@ -111,6 +112,7 @@ export default {
       nowStoryPart: null,
       nowStoryIndex: 0,
       result: {},
+      audioSrc: '',
     }
   },
   methods: {
@@ -249,7 +251,7 @@ export default {
   props: ['node', 'token', 'user', 'onHangUpClick'],
   components: {
     aStoryHeader,
-    aCrossBg,
+    aP5CrossBg,
     mSiriWave,
     aButton,
     mOptionButtonGroup,
@@ -317,24 +319,26 @@ export default {
               y: 0,
               onStart: () => {
                 if (newStoryPart.type === 1 && this.scriptParameter.AutoNext) {
-                  const audio = new Audio(
-                    `${process.env.VUE_APP_SERVER_HOST}/public/audios/${newStoryPart.questionAudio}`
-                  )
+                  this.audioSrc = `${process.env.VUE_APP_SERVER_HOST}/public/audios/${newStoryPart.questionAudio}`
 
-                  function audioEnd() {
+                  const audioEnd = () => {
                     this.setNextStoryPart()
-                    audio.removeEventListener('ended', audioEnd)
-                    audio.removeEventListener('canplaythrough', audioCanPlay)
+                    this.$refs.audio.removeEventListener('ended', audioEnd)
+                    this.$refs.audio.removeEventListener(
+                      'canplaythrough',
+                      audioCanPlay
+                    )
                   }
 
-                  function audioCanPlay() {
-                    audio.play()
-                    audio.addEventListener('ended', audioEnd.bind(this))
+                  const audioCanPlay = () => {
+                    this.$refs.audio.muted = false
+                    this.$refs.audio.play()
+                    this.$refs.audio.addEventListener('ended', audioEnd)
                   }
 
-                  audio.addEventListener(
+                  this.$refs.audio.addEventListener(
                     'canplaythrough',
-                    audioCanPlay.bind(this)
+                    audioCanPlay
                   )
                 }
               },
@@ -372,10 +376,6 @@ export default {
     },
   },
   mounted() {
-    if (this.startTimer !== null) {
-      clearInterval(this.startTimer)
-    }
-
     this.startTimer = setInterval(this.displayTime, 1000)
 
     this.id = this.node.id
@@ -386,6 +386,9 @@ export default {
         this.story = d.data.data
       }
     })
+  },
+  unmounted() {
+    clearInterval(this.startTimer)
   },
 }
 </script>
