@@ -2,7 +2,7 @@
   <div class="m-map-info" ref="m-map-info">
     <img src="../../../assets/bgNode1.png" alt="bg" ref="bottom-bg" />
     <div class="m-map-info__info" ref="info">
-      <div class="m-map-info__arrow">
+      <div class="m-map-info__arrow" ref="arrow">
         <div class="m-map-info__arrow-left" ref="arrow-left"></div>
         <div class="m-map-info__arrow-right" ref="arrow-right"></div>
       </div>
@@ -71,6 +71,10 @@ export default {
         gsap.to(this.$refs['m-map-info'], {
           y: -80,
         })
+        gsap.to(this.$refs.arrow, {
+          opacity: 1,
+          duration: 0.5,
+        })
         Draggable.get(this.$refs['m-map-info']).enable()
       } else {
         gsap.to(this.$refs['m-map-info'], {
@@ -79,6 +83,10 @@ export default {
             this.title = ''
             this.titleEn = ''
           },
+        })
+        gsap.to(this.$refs.arrow, {
+          opacity: 0,
+          duration: 0.5,
         })
         Draggable.get(this.$refs['m-map-info']).disable()
       }
@@ -92,10 +100,11 @@ export default {
       const Dictionary = {
         show: {
           y: (window.innerHeight - 100) * -1,
-          paddingTop: 40,
+          paddingTop: 80,
           maskHeight: '0%',
           arrowLeftRotate: 15,
           arrowRightRotate: -15,
+          arrowTop: '-20px',
         },
         hide: {
           y: -80,
@@ -103,6 +112,7 @@ export default {
           maskHeight: '95%',
           arrowLeftRotate: -15,
           arrowRightRotate: 15,
+          arrowTop: '-40px',
         },
       }
       gsap
@@ -128,6 +138,13 @@ export default {
           '<'
         )
         .to(
+          this.$refs.arrow,
+          {
+            top: Dictionary[action].arrowTop,
+          },
+          '<'
+        )
+        .to(
           this.$refs['arrow-left'],
           {
             rotate: Dictionary[action].arrowLeftRotate,
@@ -148,6 +165,12 @@ export default {
 
     Draggable.create(this.$refs['m-map-info'], {
       type: 'y',
+      bounds: {
+        top: 0,
+        left: 0,
+        width: window.innerWidth,
+        height: window.innerHeight * 2,
+      },
       onDragEnd: (e) => {
         if ((!this.isOpen && e.y < window.innerHeight - 100) || e.y < 150) {
           this.isOpen = true
@@ -170,9 +193,11 @@ export default {
   position: fixed;
   top: calc(100% - 100px);
   z-index: 1;
+  overflow: hidden;
 
   img {
     width: 100%;
+    position: absolute;
     mask: radial-gradient(
       550% var(--mask-height) at top,
       transparent 0%,
@@ -261,6 +286,9 @@ export default {
     display: flex;
     justify-content: center;
     margin-bottom: 10px;
+    position: relative;
+    top: -40px;
+    opacity: 0;
 
     &-left {
       content: '';
@@ -289,6 +317,7 @@ export default {
     }
 
     &-cross {
+      width: 15px;
       position: absolute;
 
       &:nth-of-type(1) {
