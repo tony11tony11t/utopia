@@ -1,10 +1,10 @@
 <template>
   <div class="m-time-end-screen">
     <p class="m-time-end-screen__title">通信時間</p>
-    <aTimeBlock title="時" titleEn="hours" time="00" />
+    <aTimeBlock title="時" titleEn="hours" :time="hours" />
     <div class="m-time-end-screen__row">
-      <aTimeBlock title="分" titleEn="minute" time="00" />
-      <aTimeBlock title="秒" titleEn="second" time="00" />
+      <aTimeBlock title="分" titleEn="minute" :time="minutes" />
+      <aTimeBlock title="秒" titleEn="second" :time="seconds" />
       <img svg-inline src="../../../assets/icons/cross.svg" alt="cross" />
     </div>
     <div class="m-time-end-screen__lines">
@@ -32,6 +32,7 @@ export default {
 .m-time-end-screen {
   display: flex;
   flex-direction: column;
+  overflow: hidden;
 
   &__title {
     font-family: 'Glow Sans TC', sans-serif;
