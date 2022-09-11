@@ -1,0 +1,8 @@
+<svg width="20" height="20" viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg">
+    <circle cx="10" cy="10" r="10" fill="#0037FF" opacity="1">
+        <animate attributeName="opacity" values="0;1;1;0" dur="2s" repeatCount="indefinite" keyTime="0;0.25'0.75;1" />
+    </circle>
+    <circle cx="10" cy="10" r="6" fill="#CCFDFF" opacity="1">
+        <animate attributeName="opacity" values="0;1;1;0" dur="2s" repeatCount="indefinite" keyTime="0;0.25'0.75;1" />
+    </circle>
+</svg>
