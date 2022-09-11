@@ -14,7 +14,7 @@
           blue: color === 'blue',
         }"
       >
-        {{ time }}
+        {{ time < 10 ? `0${time}` : time }}
       </p>
       <p class="a-time-block__info-texten">{{ titleEn }}</p>
     </div>
