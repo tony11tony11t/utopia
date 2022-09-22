@@ -1,21 +1,73 @@
 <template>
   <div class="m-map-info" ref="m-map-info">
-    <img :src="bgSrc" alt="bg" ref="bottom-bg" />
+    <img
+      :src="require(`@/assets/bgNode${mark ? mark?.id : 'Normal'}.png`)"
+      alt="bg"
+      ref="bottom-bg"
+    />
     <div class="m-map-info__info" ref="info">
-      <div class="m-map-info__arrow" ref="arrow">
-        <div class="m-map-info__arrow-left" ref="arrow-left"></div>
-        <div class="m-map-info__arrow-right" ref="arrow-right"></div>
+      <div
+        class="m-map-info__arrow"
+        :class="{
+          animation: !isOpen && mark,
+        }"
+        ref="arrow"
+      >
+        <div
+          class="m-map-info__arrow-left"
+          :class="{
+            disable: mark?.isPass,
+            final: mark?.type === 3,
+          }"
+          ref="arrow-left"
+        ></div>
+        <div
+          class="m-map-info__arrow-right"
+          :class="{
+            disable: mark?.isPass,
+            final: mark?.type === 3,
+          }"
+          ref="arrow-right"
+        ></div>
       </div>
-      <p class="m-map-info__info-text">{{ title }}</p>
-      <p class="m-map-info__info-text-en">aaaaaaaaaaaaaaaaaaaaa</p>
+      <p
+        class="m-map-info__info-text"
+        :class="{
+          disable: mark?.isPass,
+          final: mark?.type === 3,
+        }"
+      >
+        {{ title }}
+      </p>
+      <p
+        class="m-map-info__info-text-en"
+        :class="{
+          disable: mark?.isPass,
+          final: mark?.type === 3,
+        }"
+      >
+        {{ titleEn }}
+      </p>
       <img
         svg-inline
         class="m-map-info__svg-line"
         src="../../../assets/descriptionHeaderDivide.svg"
         alt="line"
       />
-      <div class="m-map-info__info-message">
-        <p class="m-map-info__info-message-content">{{ message }}</p>
+      <div
+        class="m-map-info__info-message"
+        :class="{
+          disable: mark?.isPass,
+        }"
+      >
+        <p
+          class="m-map-info__info-message-content"
+          :class="{
+            disable: mark?.isPass,
+          }"
+        >
+          {{ message }}
+        </p>
         <img
           v-for="n in 4"
           :key="n"
@@ -26,13 +78,24 @@
         />
       </div>
       <img
+        v-if="mark?.isPass !== true"
         class="m-map-info__info-main-img"
-        src="../../../assets/descriptionImg.png"
+        :src="require(`@/assets/descriptionImg.png`)"
         alt="img"
       />
+      <img
+        v-else
+        svg-inline
+        class="m-map-info__info-alert"
+        src="../../../assets/alert.svg"
+        alt="alert"
+      />
       <aButton
-        :type="type"
+        :type="mark?.isPass !== true ? type : 'close'"
         class="m-map-info__info-button"
+        :class="{
+          disable: mark?.isPass,
+        }"
         :onClick="handleClick"
       />
       <p v-if="type === 'forward'" class="m-map-info__tips">
@@ -54,7 +117,6 @@ export default {
       message: '',
       isOpen: false,
       type: 'forward',
-      bgSrc: require('@/assets/bgNormal.png'),
     }
   },
   props: ['mark', 'onClick', 'distance'],
@@ -65,8 +127,12 @@ export default {
     mark(nextMark) {
       if (nextMark) {
         this.title = nextMark.title
-        this.titleEn = nextMark.title
-        this.message = nextMark.message
+        this.titleEn = nextMark.titleEn
+        if (nextMark.isPass) {
+          this.message = '此關卡已完成，請盡快前往下一個場所。'
+        } else {
+          this.message = nextMark.message
+        }
         gsap.to(this.$refs['m-map-info'], {
           y: -110,
         })
@@ -91,25 +157,28 @@ export default {
       }
     },
     distance(nextDistance) {
-      this.type = nextDistance > 20 ? 'forward' : 'check'
+      if (this.mark) {
+        this.type =
+          nextDistance < this.mark.triggerDistance ? 'check' : 'forward'
+      }
     },
   },
   methods: {
     handleClick() {
       this.DragInfoAnimation(
         'hide',
-        this.type === 'check' ? this.onClick : null
+        this.type === 'check' && !this.mark.isPass ? this.onClick : null
       )
     },
     DragInfoAnimation(action, onComplete) {
       const Dictionary = {
         show: {
-          y: (window.innerHeight - 100) * -1,
-          paddingTop: 60,
-          maskHeight: '1%',
+          y: this.mark.isPass ? -400 : (window.innerHeight - 100) * -1,
+          paddingTop: this.mark.isPass ? 100 : 60,
+          maskHeight: this.mark.isPass ? '120%' : '1%',
           arrowLeftRotate: 25,
           arrowRightRotate: -25,
-          arrowTop: '-20px',
+          arrowTop: this.mark.isPass ? '-40px' : '-20px',
         },
         hide: {
           y: -110,
@@ -232,6 +301,17 @@ export default {
       margin: 0 auto 6px;
       width: 80%;
       word-break: break-all;
+      transition: 0s all 1s;
+
+      &.disable {
+        color: #858585;
+        transition: 0s all 0s;
+      }
+
+      &.final {
+        color: #b566ff;
+        transition: 0s all 0s;
+      }
 
       &-en {
         font-family: Montserrat, sans-serif;
@@ -246,6 +326,17 @@ export default {
         margin: 0 auto 6px;
         width: 80%;
         word-break: break-all;
+        transition: 0s all 1s;
+
+        &.disable {
+          color: #858585;
+          transition: 0s all 0s;
+        }
+
+        &.final {
+          color: #b566ff;
+          transition: 0s all 0s;
+        }
       }
     }
 
@@ -256,6 +347,15 @@ export default {
       margin: 0 20px;
       min-height: 100px;
       height: auto;
+
+      &.disable {
+        min-height: auto;
+
+        &::before,
+        &::after {
+          min-height: calc(58px - 30px);
+        }
+      }
 
       &-content {
         font-family: 'Glow Sans TC', sans-serif;
@@ -268,6 +368,10 @@ export default {
         flex: 1;
         padding: 15px;
         margin: 0;
+
+        &.disable {
+          color: #ccfdff;
+        }
       }
 
       &::before,
@@ -289,6 +393,20 @@ export default {
       bottom: 50px;
       margin: 0 30px;
       width: calc(100% - 60px);
+
+      &.disable {
+        position: relative;
+        margin-top: 20px;
+        bottom: 0;
+      }
+    }
+
+    &-alert {
+      width: 150px;
+      position: relative;
+      left: 50%;
+      margin-top: 20px;
+      transform: translateX(-50%);
     }
   }
 
@@ -300,6 +418,10 @@ export default {
     top: -40px;
     opacity: 0;
 
+    &.animation {
+      animation: top 1s infinite linear;
+    }
+
     &-left {
       content: '';
       display: block;
@@ -309,6 +431,17 @@ export default {
       border-radius: 3px;
       transform: rotate(-25deg) translateX(4px);
       transform-origin: left;
+      transition: 0s background-color 1s;
+
+      &.disable {
+        background-color: #858585;
+        transition: 0s background-color 0s;
+      }
+
+      &.final {
+        background-color: #b566ff;
+        transition: 0s background-color 0s;
+      }
     }
 
     &-right {
@@ -320,6 +453,17 @@ export default {
       border-radius: 3px;
       transform: rotate(25deg) translateX(-4px);
       transform-origin: right;
+      transition: 0s background-color 1s;
+
+      &.disable {
+        background-color: #858585;
+        transition: 0s background-color 0s;
+      }
+
+      &.final {
+        background-color: #b566ff;
+        transition: 0s background-color 0s;
+      }
     }
   }
 
@@ -365,6 +509,23 @@ export default {
     margin: 0;
     bottom: 15px;
     width: 100%;
+  }
+}
+
+@keyframes top {
+  0% {
+    top: -40px;
+    opacity: 1;
+  }
+
+  50% {
+    top: -55px;
+    opacity: 1;
+  }
+
+  100% {
+    top: -70px;
+    opacity: 0;
   }
 }
 </style>

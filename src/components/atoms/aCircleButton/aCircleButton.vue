@@ -1,10 +1,42 @@
 <template>
-  <div class="button-wrapper" @click="onClick" @keyDown="onClick">
+  <div
+    class="button-wrapper"
+    @click="onClick"
+    @keyDown="onClick"
+    @touchstart="() => sfx?.play()"
+  >
     <div class="button-container">
       <span v-for="text in buttonType[type].label.split('')" :key="text">
         {{ text }}
       </span>
-      <img svg-inline class="icon" :src="buttonType[type].src" :alt="type" />
+      <img
+        v-if="type === 'record'"
+        svg-inline
+        class="icon"
+        src="../../../assets/icons/record.svg"
+        :alt="type"
+      />
+      <img
+        v-else-if="type === 'send'"
+        svg-inline
+        class="icon"
+        src="../../../assets/icons/send.svg"
+        :alt="type"
+      />
+      <img
+        v-else-if="type === 'phone'"
+        svg-inline
+        class="icon"
+        src="../../../assets/icons/phone.svg"
+        :alt="type"
+      />
+      <img
+        v-else-if="type === 'start'"
+        svg-inline
+        class="icon"
+        src="../../../assets/icons/send.svg"
+        :alt="type"
+      />
     </div>
   </div>
 </template>
@@ -21,10 +53,6 @@ export default {
           label: '錄音',
           src: require('@/assets/icons/record.svg'),
         },
-        'pause': {
-          label: '暫停',
-          src: require('@/assets/icons/pause.svg'),
-        },
         'send': {
           label: '送出',
           src: require('@/assets/icons/send.svg'),
@@ -36,10 +64,7 @@ export default {
       },
     }
   },
-  props: {
-    type: String,
-    onClick: Function,
-  },
+  props: ['type', 'onClick', 'sfx'],
 }
 </script>
 <style lang="scss" scoped>
@@ -68,7 +93,11 @@ export default {
       font-style: normal;
       font-weight: 400;
       font-size: 16px;
-      color: #cfcfcf;
+      color: #ff8133;
+
+      .final & {
+        color: #ce99ff;
+      }
     }
 
     &:active {
@@ -105,5 +134,11 @@ export default {
   left: 50%;
   top: 50%;
   transform: translate(-50%, -50%);
+
+  path {
+    .final & {
+      fill: #ce99ff;
+    }
+  }
 }
 </style>

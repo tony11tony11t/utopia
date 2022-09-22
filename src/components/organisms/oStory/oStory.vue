@@ -1,39 +1,89 @@
 <template>
-  <div class="o-story">
+  <div
+    class="o-story"
+    :class="{
+      final: id === 8,
+    }"
+  >
     <div
       class="o-story__bg"
       :style="{
-        'backgroundImage': `url(${require(`@/assets/bgNode${id}.png`)})`,
+        'backgroundImage': `url(${require(`@/assets/bgNode${
+          id === 8 ? 'Final' : id
+        }.png`)})`,
       }"
     ></div>
-    <aP5CrossBg :disableBg="true" :size="0.5" />
+    <aP5CrossBg v-if="id !== 8" :disableBg="true" :size="0.5" />
     <aStoryHeader
       class="o-story__header"
-      type="通訊中"
+      :type="
+        nowStoryIndex === -1
+          ? '通訊結束'
+          : nowStoryIndex === -2
+          ? '恭喜完成'
+          : '通訊中'
+      "
       :contact="contact"
       :notes="time"
     />
-    <mSiriWave v-if="nowStoryIndex !== -1" />
-    <div v-if="nowStoryIndex !== -1" class="o-story__question" ref="question">
+    <mSiriWave
+      v-if="nowStoryIndex >= 0 && id > 2"
+      :type="nowStoryPart?.type === 9 ? 'special' : id"
+    />
+    <div
+      v-if="nowStoryIndex >= 0"
+      class="o-story__question"
+      :class="{
+        only: id <= 2,
+      }"
+      ref="question"
+    >
       <div class="o-story__question-border"></div>
       <p>{{ nowStoryPart?.question }}</p>
       <div class="o-story__question-border"></div>
     </div>
 
+    <!-- Type 1 -->
+    <aButton
+      v-if="showCheckButton()"
+      ref="check-button"
+      class="o-story__button"
+      type="check"
+      :onClick="handleCheckClick"
+      :sfx="sfxList['node-touch-confirm']"
+    />
+
     <!-- Type 2 -->
     <mOptionButtonGroup
       v-if="nowStoryPart?.type === 2"
       ref="type2"
+      :key="nowStoryPart?.key"
       :options="scriptParameter?.Options"
-      :onClick="handleOptionButtonClick"
+      :onOptionClick="handleOptionButtonClick"
+      :sfx="sfxList['node-touch-confirm']"
     />
 
     <!-- Type 3 -->
-    <aTextarea
+    <mInputGroup
       v-if="nowStoryPart?.type === 3"
       ref="type3"
-      class="o-story__textarea"
-      :onInputChange="handleInputChange"
+      type="single"
+      :key="nowStoryPart?.key"
+      :onInputSendClick="handleInputSendClick"
+      :final="id === 8"
+      :sfx="sfxList['node-touch-confirm']"
+    />
+
+    <!-- Type 4 -->
+    <mInputGroup
+      v-if="nowStoryPart?.type === 4"
+      ref="type4"
+      type="mutiple"
+      :key="nowStoryPart?.key"
+      :onInputSendClick="handleInputSendClick"
+      :fields="scriptParameter"
+      :final="id === 8"
+      :sfx="sfxList['node-touch-confirm']"
     />
 
     <!-- Type 5 -->
@@ -41,6 +91,7 @@
       v-if="nowStoryPart?.type === 5"
       ref="type5"
       class="o-story__record"
+      :key="nowStoryPart?.key"
       :onRecorderEnd="handleRecorderEnd"
     />
 
@@ -49,18 +100,37 @@
       v-if="nowStoryPart?.type === 6"
       ref="type6"
       class="o-story__knob"
-      :onRotateEnd="handleRotateEnd"
+      :onSendButtonClick="handleSendButtonClick"
       :range="scriptParameter"
       :key="nowStoryPart.key"
+      :final="id === 8"
+      :sfx="sfxList['node-touch-confirm']"
+      :sfxKnob="sfxList['rate-touch']"
     />
 
-    <aButton
-      v-if="showCheckButton()"
-      ref="check-button"
-      class="o-story__button"
-      type="check"
-      :onClick="handleCheckClick"
+    <!-- Type 7 -->
+    <mOptionButtonGroup
+      v-if="nowStoryPart?.type === 7"
+      ref="type7"
+      :key="nowStoryPart?.key"
+      :options="scriptParameter?.Options"
+      :onOptionClick="handleInfoClick"
+      :onCheckClick="handleCheckClick"
+      :sfx="sfxList['node-touch-confirm']"
     />
+
+    <!-- type 8 -->
+    <div v-if="id === 8">
+      <div v-show="nowStoryPart?.type === 8" class="o-story__video">
+        <video
+          :src="videoSrc"
+          playsinline
+          preload="auto"
+          ref="final-video"
+          id="final-video"
+        ></video>
+      </div>
+    </div>
 
     <!-- End -->
     <div
@@ -72,14 +142,29 @@
       <aButton
         class="o-story__time-end-button"
         type="hangUp"
-        :onClick="onHangUpClick"
+        :onClick="handleHangUpClick"
+      />
+    </div>
+
+    <!-- Final Tips -->
+    <div
+      v-if="nowStoryIndex === -2"
+      ref="final-tips"
+      class="o-story__final-tips-screen"
+    >
+      <mFinalTipScreen minutes="59" seconds="0" place="place" />
+      <aButton
+        class="o-story__final-tips-button"
+        type="check"
+        :onClick="handleHangUpClick"
       />
     </div>
   </div>
-  <audio ref="audio" :src="audioSrc" autoPlay muted></audio>
 </template>
 <script>
 import gsap from 'gsap'
+import { Howl, Howler } from 'howler'
+import Pizzicato from 'pizzicato'
 import FrontendAPI from '@/api'
 import aStoryHeader from '@/components/atoms/aStoryHeader'
 import mRecord from '@/components/molecules/mRecord'
@@ -87,13 +172,15 @@ import mSend from '@/components/molecules/mSend'
 import aTextarea from '@/components/atoms/aTextarea'
 import aTimeBlock from '@/components/atoms/aTimeBlock'
 import mTimeEndScreen from '@/components/molecules/mTimeEndScreen'
-import aAlertLogo from '@/components/atoms/aAlertLogo'
 import mSiriWave from '@/components/molecules/mSiriWave/mSiriWave.vue'
 import mKnob from '@/components/molecules/mKnob'
 import aButton from '@/components/atoms/aButton'
 import aOptionButton from '@/components/atoms/aOptionButton'
 import mOptionButtonGroup from '@/components/molecules/mOptionButtonGroup'
 import aP5CrossBg from '@/components/atoms/aP5CrossBg'
+import mInputGroup from '@/components/molecules/mInputGroup'
+import mFinalTipScreen from '@/components/molecules/mFinalTipScreen'
+
 import aInput from '../../atoms/aInput/aInput.vue'
 
 export default {
@@ -101,7 +188,7 @@ export default {
     return {
       // info
       id: 1,
-      contact: 'E',
+      contact: '',
       // timer
       hours: 0,
       minutes: 0,
@@ -113,25 +200,41 @@ export default {
       nowStoryIndex: 0,
       result: {},
       audioSrc: '',
+      tempResponseData: {},
+      tempStoryAudio: null,
+      finishResult: {},
+      // other
+      videoSrc: `${process.env.VUE_APP_SERVER_HOST}/public/3mins.mp4`,
+      player: null,
     }
   },
   methods: {
     setNextStoryPart() {
       window.scrollTo(0, 0)
-      if (this.nowStoryIndex + 1 >= this.story.length) {
-        this.showEndScreen()
+      if (this.nowStoryPart.hasFixedRep) {
+        const response = JSON.parse(this.nowStoryPart.response)
+        if (response.length > 0 && this.nowStoryPart.type !== 7) {
+          this.showResponse(response)
+        } else if (this.nowStoryIndex + 1 >= this.story.length) {
+          this.showEndScreen()
+        } else {
+          this.nowStoryPart = this.story[this.nowStoryIndex + 1]
+          this.nowStoryIndex += 1
+        }
       } else {
-        this.nowStoryPart = this.story[this.nowStoryIndex + 1]
-        this.nowStoryIndex += 1
+        this.nowStoryPart = {
+          question: this.tempResponseData.response,
+          questionAudio: this.tempResponseData.responseAudio,
+          type: 1,
+          key: 'responsed',
+          hasFixedRep: true,
+          response: '[]',
+          scriptParameter: '{"AutoNext":false}',
+        }
       }
     },
     showCheckButton() {
-      return (
-        (this.nowStoryPart?.type === 1 && !this.scriptParameter.AutoNext) ||
-        this.nowStoryPart?.type === 2 ||
-        this.nowStoryPart?.type === 3 ||
-        this.nowStoryPart?.type === 6
-      )
+      return this.nowStoryPart?.type === 1 && !this.scriptParameter.AutoNext
     },
     showAnimation(el, from, to) {
       const fromConfig = {
@@ -150,18 +253,28 @@ export default {
       return gsap.fromTo(el, fromConfig, toConfig)
     },
     showEndScreen() {
-      this.nowStoryPart = null
-      this.nowStoryIndex = -1
-      clearInterval(this.startTimer)
-      this.$nextTick(() => {
-        this.showAnimation(
-          this.$refs['time-end'],
-          {},
-          {
-            duration: 1,
-          }
-        )
+      new FrontendAPI().putFinish(this.token, this.id).then((d) => {
+        this.setFinishNode(d.data.data.userMapType, this.id)
+        this.finishResult = d.data.data
       })
+      clearInterval(this.startTimer)
+
+      if (this.id <= 2) {
+        this.onHangUpClick()
+      } else {
+        this.sfxList['phone-end'].play()
+        this.nowStoryPart = null
+        this.nowStoryIndex = -1
+        this.$nextTick(() => {
+          this.showAnimation(
+            this.$refs['time-end'],
+            {},
+            {
+              duration: 1,
+            }
+          )
+        })
+      }
     },
     displayTime() {
       this.seconds += 1
@@ -186,10 +299,9 @@ export default {
         formData.append(key, value)
       })
 
-      this.setNextStoryPart()
-
       new FrontendAPI().postResult(this.token, formData).then((d) => {
-        console.log(d)
+        this.tempResponseData = d.data.data
+        this.setNextStoryPart()
       })
     },
     setResult(resultkey, resultValue) {
@@ -206,49 +318,89 @@ export default {
 
       return result
     },
+    handleHangUpClick() {
+      if (this.finishResult.isFinish && this.nowStoryIndex !== -2) {
+        this.nowStoryIndex = -2
+        this.$nextTick(() => {
+          this.showAnimation(
+            this.$refs['final-tips'],
+            {},
+            {
+              duration: 1,
+            }
+          )
+        })
+      } else {
+        this.onHangUpClick()
+      }
+    },
     handleRecorderEnd(blob) {
       const result = this.setResult('file', blob)
 
-      setTimeout(() => this.sendResult(result), 1300)
+      setTimeout(() => {
+        this.sendResult(result)
+      }, 1300)
     },
     handleOptionButtonClick(content) {
-      if (!this.result[this.nowStoryPart.key]) {
-        this.showAnimation(this.$refs['check-button'].$el)
-      }
       this.setResult('value', content)
+      this.sendResult(this.result[this.nowStoryPart.key])
     },
-    handleInputChange(msg) {
-      if (msg === '') {
-        gsap.set(this.$refs['check-button'].$el, {
-          opacity: 0,
-          pointerEvents: 'none',
-        })
-        delete this.result[this.nowStoryPart.key]
-        return
-      }
-
-      if (!this.result[this.nowStoryPart.key]) {
-        this.showAnimation(this.$refs['check-button'].$el)
-      }
-
-      this.setResult('value', msg)
+    handleInputSendClick(msg) {
+      this.setResult('value', JSON.parse(JSON.stringify(msg)))
+      this.sendResult(this.result[this.nowStoryPart.key])
     },
-    handleRotateEnd(score) {
-      if (!this.result[this.nowStoryPart.key]) {
-        this.showAnimation(this.$refs['check-button'].$el)
-      }
-
+    handleSendButtonClick(score) {
       this.setResult('value', score)
+      this.sendResult(this.result[this.nowStoryPart.key])
     },
     handleCheckClick() {
-      if (this.nowStoryPart.type === 2 || this.nowStoryPart.type === 3) {
-        this.sendResult(this.result[this.nowStoryPart.key])
-      } else {
-        this.setNextStoryPart()
+      this.setNextStoryPart()
+    },
+    handleInfoClick(content, id) {
+      this.nowStoryPart = {
+        question: JSON.parse(this.nowStoryPart.response)[id],
+        questionAudio: '',
+        type: 1,
+        key: 'responsed',
+        hasFixedRep: true,
+        response: '[]',
+        scriptParameter: '{"AutoNext":false}',
+      }
+      this.nowStoryIndex -= 1
+      this.sfxList['node-touch-confirm'].play()
+    },
+    showResponse(responseOption) {
+      this.nowStoryPart = {
+        question:
+          responseOption[
+            this.scriptParameter.Options.indexOf(
+              this.result[this.nowStoryPart.key].value
+            )
+          ],
+        questionAudio: '',
+        type: 1,
+        key: 'responsed',
+        hasFixedRep: true,
+        response: '[]',
+        scriptParameter: '{"AutoNext":false}',
+      }
+    },
+    stopAudio() {
+      if (this.tempStoryAudio) {
+        this.tempStoryAudio.stop()
+        this.tempStoryAudio.unload()
       }
     },
   },
-  props: ['node', 'token', 'user', 'onHangUpClick'],
+  props: [
+    'node',
+    'token',
+    'user',
+    'onHangUpClick',
+    'setFinishNode',
+    'musicList',
+    'sfxList',
+  ],
   components: {
     aStoryHeader,
     aP5CrossBg,
@@ -256,9 +408,10 @@ export default {
     aButton,
     mOptionButtonGroup,
     mRecord,
-    aTextarea,
     mKnob,
     mTimeEndScreen,
+    mFinalTipScreen,
+    mInputGroup,
   },
   computed: {
     time() {
@@ -276,119 +429,290 @@ export default {
     },
     keys() {
       if (this.nowStoryPart.variableKey) {
-        return JSON.parse(this.nowStoryPart.variableKey)
+        try {
+          return JSON.parse(this.nowStoryPart.variableKey)
+        } catch {
+          return JSON.parse(this.nowStoryPart.variableKey.replace(/'/g, '"'))
+        }
       }
       return ''
     },
   },
   watch: {
     story(newStory) {
-      const [firstStory] = newStory
       this.nowStoryIndex = 0
-      this.nowStoryPart = firstStory
+      this.nowStoryPart = newStory[0]
     },
     nowStoryPart(newStoryPart) {
       if (!newStoryPart) return
-      console.log(newStoryPart)
 
-      this.nowStoryPart.question = newStoryPart.question
-        .replace(/{\d+}/g, (match) => {
-          const idx = parseInt(match.substring(1, match.length - 1), 10)
-          if (this.user[this.keys[idx]]) {
-            return this.user[this.keys[idx]]
-          }
-          if (this.result[this.keys[idx]]) {
-            return this.result[this.keys[idx]].value
-          }
-          return ''
-        })
-        .replace(/\\n/g, '\n')
+      this.stopAudio()
 
-      this.$nextTick(() => {
-        const timeline = gsap.timeline({})
-        timeline.add(
-          gsap.fromTo(
-            this.$refs.question,
-            {
-              opacity: 0,
-              y: 50,
-            },
-            {
-              duration: 0.5,
-              opacity: 1,
-              y: 0,
-              onStart: () => {
-                if (newStoryPart.type === 1 && this.scriptParameter.AutoNext) {
-                  this.audioSrc = `${process.env.VUE_APP_SERVER_HOST}/public/audios/${newStoryPart.questionAudio}`
+      if (newStoryPart.type === 8) {
+        const video = this.$refs['final-video']
+        this.$nextTick(() => {
+          video.play()
+          let audiosLoadedCount = 0
+          let audioNowIndex = 0
+          const audios = this.scriptParameter.map(
+            ({
+              AudioKey,
+              lowPassFilter,
+              hightPassFilter,
+              hightPassPeak,
+              stereopanner,
+              attack,
+              release,
+            }) => {
+              const sound = new Pizzicato.Sound(
+                {
+                  source: 'file',
+                  options: {
+                    path: `${process.env.VUE_APP_SERVER_HOST}/public/audios/${AudioKey}.mp3`,
+                    release,
+                    attack,
+                  },
+                },
+                () => {
+                  audiosLoadedCount += 1
 
-                  const audioEnd = () => {
-                    this.setNextStoryPart()
-                    this.$refs.audio.removeEventListener('ended', audioEnd)
-                    this.$refs.audio.removeEventListener(
-                      'canplaythrough',
-                      audioCanPlay
-                    )
-                  }
+                  sound.addEffect(
+                    new Pizzicato.Effects.LowPassFilter({
+                      frequency: lowPassFilter,
+                      peak: 5,
+                    })
+                  )
 
-                  const audioCanPlay = () => {
-                    this.$refs.audio.muted = false
-                    this.$refs.audio.play()
-                    this.$refs.audio.addEventListener('ended', audioEnd)
-                  }
+                  sound.addEffect(
+                    new Pizzicato.Effects.HighPassFilter({
+                      frequency: hightPassFilter,
+                      peak: hightPassPeak,
+                    })
+                  )
 
-                  this.$refs.audio.addEventListener(
-                    'canplaythrough',
-                    audioCanPlay
+                  sound.addEffect(
+                    new Pizzicato.Effects.StereoPanner({
+                      pan: stereopanner,
+                    })
                   )
                 }
-              },
+              )
+
+              return sound
             }
           )
-        )
+          const checkTimer = setInterval(() => {
+            if (audiosLoadedCount === this.scriptParameter.length) {
+              video.play()
+              clearInterval(checkTimer)
+            }
+          }, 1000)
+          video.currentTime = 40
+          video.volume = 0.3
 
-        if (this.showCheckButton()) {
-          gsap.set(this.$refs['check-button'].$el, {
-            opacity: 0,
-            pointerEvents: 'none',
+          video.addEventListener('timeupdate', () => {
+            if (
+              audioNowIndex < this.scriptParameter.length &&
+              this.scriptParameter[audioNowIndex].Position < video.currentTime
+            ) {
+              audios[audioNowIndex].play()
+              audioNowIndex += 1
+            }
           })
+          video.addEventListener('ended', () => {
+            this.setNextStoryPart()
+            video.removeEventListener('timeupdate')
+            video.removeEventListener('ended')
+          })
+        })
+      } else {
+        //  combine question
+        this.nowStoryPart.question = newStoryPart.question
+          .replace(/{\d+}/g, (match) => {
+            const idx = parseInt(match.substring(1, match.length - 1), 10)
+            if (this.user[this.keys[idx]]) {
+              return this.user[this.keys[idx]]
+            }
+            if (this.result[this.keys[idx]]) {
+              return this.result[this.keys[idx]].value
+            }
+            if (this.keys[idx].includes('_')) {
+              const key = this.keys[idx].split('_')[0]
+              return this.result[key].value[this.keys[idx]]
+            }
+            return ''
+          })
+          .replace(/\\n/g, '\n')
+
+        // use gsap to show the ui component
+        this.$nextTick(() => {
+          const timeline = gsap.timeline({})
+          timeline.add(
+            gsap.fromTo(
+              this.$refs.question,
+              {
+                opacity: 0,
+                y: 50,
+              },
+              {
+                duration: 0.5,
+                opacity: 1,
+                y: 0,
+                onStart: () => {
+                  if (newStoryPart.questionAudio !== '') {
+                    const url = `${process.env.VUE_APP_SERVER_HOST}${
+                      newStoryPart.questionAudio.includes('/')
+                        ? newStoryPart.questionAudio
+                        : `/public/audios/${newStoryPart.questionAudio}`
+                    }`
+
+                    this.tempStoryAudio = new Howl({
+                      src: [url],
+                      html5: true,
+                      preload: true,
+                      onplay: () => {
+                        this.tempStoryAudio.mute(false)
+                      },
+                      onend: () => {
+                        if (
+                          (newStoryPart.type === 1 &&
+                            this.scriptParameter.AutoNext) ||
+                          newStoryPart.type === 9
+                        )
+                          this.setNextStoryPart()
+                        this.tempStoryAudio.unload()
+                        this.tempStoryAudio.stop()
+                      },
+                    })
+                    this.tempStoryAudio.play()
+                  }
+                },
+              }
+            )
+          )
+
+          if (this.showCheckButton()) {
+            gsap.set(this.$refs['check-button'].$el, {
+              opacity: 0,
+              pointerEvents: 'none',
+            })
+          }
+
+          if (newStoryPart.type === 1 && !this.scriptParameter.AutoNext) {
+            timeline.add(this.showAnimation(this.$refs['check-button'].$el))
+          }
+
+          if (newStoryPart.type === 2) {
+            timeline.add(this.showAnimation(this.$refs.type2.$el))
+          }
+
+          if (newStoryPart.type === 3) {
+            timeline.add(this.showAnimation(this.$refs.type3.$el))
+          }
+
+          if (newStoryPart.type === 5) {
+            timeline.add(this.showAnimation(this.$refs.type5.$el))
+          }
+
+          if (newStoryPart.type === 6) {
+            timeline.add(this.showAnimation(this.$refs.type6.$el))
+          }
+          if (newStoryPart.type === 7) {
+            timeline.add(this.showAnimation(this.$refs.type7.$el))
+          }
+        })
+
+        // play background music if the node has
+        const [id, index] = newStoryPart.key.split('-')
+        if (id === 'n1') {
+          if (index === '8') {
+            this.musicList.piano.play()
+          } else if (index === '9') {
+            this.musicList.piano.once('fade', () => {
+              this.musicList.piano.stop()
+            })
+            this.musicList.piano.fade(1, 0, 1000)
+          }
         }
 
-        if (newStoryPart.type === 1 && !this.scriptParameter.AutoNext) {
-          timeline.add(this.showAnimation(this.$refs['check-button'].$el))
+        if (id === 'n2') {
+          if (index === '1') {
+            this.musicList.bowl.play()
+          } else if (index === '2') {
+            this.musicList.bowl.once('fade', () => {
+              this.musicList.bowl.stop()
+            })
+            this.musicList.bowl.fade(1, 0, 1000)
+          }
         }
 
-        if (newStoryPart.type === 2) {
-          timeline.add(this.showAnimation(this.$refs.type2.$el))
+        if (id === 'n4') {
+          if (index === '7') {
+            this.musicList.cello.play()
+          } else if (index === '8') {
+            this.musicList.cello.once('fade', () => {
+              this.musicList.cello.stop()
+            })
+            this.musicList.cello.fade(1, 0, 1000)
+          } else if (index === '11') {
+            this.musicList.metrosound.play()
+          } else if (index === '12') {
+            this.musicList.metrosound.stop()
+          }
         }
 
-        if (newStoryPart.type === 3) {
-          timeline.add(this.showAnimation(this.$refs.type3.$el))
+        if (id === 'n5') {
+          if (index === '6') {
+            this.musicList.chatter.play()
+          } else if (index === '7') {
+            this.musicList.chatter.stop()
+          }
         }
 
-        if (newStoryPart.type === 5) {
-          timeline.add(this.showAnimation(this.$refs.type5.$el))
+        if (id === 'n6') {
+          if (index === '1') {
+            this.musicList.alien.play()
+          } else if (index === '15') {
+            this.musicList.alien.once('fade', () => {
+              this.musicList.alien.stop()
+            })
+            this.musicList.alien.fade(1, 0, 1000)
+          } else if (index === '16') {
+            this.musicList.bowl.play()
+          } else if (index === '24') {
+            this.musicList.bowl.once('fade', () => {
+              this.musicList.bowl.stop()
+            })
+            this.musicList.bowl.fade(1, 0, 1000)
+          }
         }
-
-        if (newStoryPart.type === 6) {
-          timeline.add(this.showAnimation(this.$refs.type6.$el))
-        }
-      })
+      }
     },
   },
   mounted() {
     this.startTimer = setInterval(this.displayTime, 1000)
 
     this.id = this.node.id
-    this.contact = this.node?.contact[0]
+    this.contact = this.node?.contact
 
-    new FrontendAPI().getMapNode(this.token, this.node.id).then((d) => {
+    new FrontendAPI().getMapNode(this.token, this.id).then((d) => {
       if (d.status === 200) {
         this.story = d.data.data
+
+        this.tempStoryAudio = new Howl({
+          src: [`${process.env.VUE_APP_SERVER_HOST}/public/music/piano.mp3`],
+          html5: true,
+          mute: true,
+          preload: true,
+        })
       }
     })
   },
   unmounted() {
     clearInterval(this.startTimer)
+    this.tempStoryAudio.stop()
+    this.tempStoryAudio.unload()
+    this.tempStoryAudio = null
   },
 }
 </script>
@@ -422,6 +746,10 @@ export default {
     padding: 0 15px;
     margin: 0 5% 50px;
 
+    &.only {
+      margin: 50px 5%;
+    }
+
     p {
       font-family: 'Glow Sans TC', sans-serif;
       font-style: normal;
@@ -442,6 +770,10 @@ export default {
       box-shadow: 0 1px 1.5px 0 rgba(255, 255, 255, 0.26);
       top: 0;
 
+      .final & {
+        background-color: #000833;
+      }
+
       @mixin corner {
         content: '';
         display: block;
@@ -450,6 +782,10 @@ export default {
         height: 15px;
         background-color: #330020;
         box-shadow: 0 1px 1.5px 0 rgba(255, 255, 255, 0.26);
+
+        .final & {
+          background-color: #000833;
+        }
       }
 
       &:nth-of-type(1) {
@@ -507,13 +843,8 @@ export default {
     bottom: 0;
   }
 
-  &__textarea {
-    margin-top: 50px;
-    width: 90%;
-    margin-left: 5%;
-  }
-
-  &__time-end {
+  &__time-end,
+  &__final-tips {
     &-screen {
       margin-top: 100px;
     }
@@ -523,6 +854,23 @@ export default {
       bottom: 30px;
       width: 80%;
       margin-left: 10%;
+    }
+  }
+
+  &__video {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    overflow: hidden;
+    background-color: black;
+
+    video {
+      position: relative;
+      width: 100%;
+      top: 50%;
+      transform: translateY(-50%);
     }
   }
 }

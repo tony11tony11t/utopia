@@ -1,35 +1,49 @@
 <template>
   <div class="o-entry">
     <div id="three-container"></div>
+    <aLoadingAnimation ref="loading" :disableBackDrop="true" />
     <div class="o-entry__info" ref="info">
       <img
         svg-inline
         src="../../../assets/logo.svg"
         alt="logo"
         class="o-entry__logo"
+        ref="logo"
       />
-      <img
-        svg-inline
-        src="../../../assets/logoEn.svg"
-        alt="logo"
-        class="o-entry__logo-en"
-      />
-      <aCircleButton
-        type="start"
-        class="o-entry__button"
-        ref="button"
-        :onClick="onStartClick"
-      />
+      <div class="o-entry__bottom">
+        <img
+          svg-inline
+          ref="start"
+          class="o-entry__start-button-icon"
+          src="../../../assets/icons/send.svg"
+          alt="start"
+          @click="handleStartClick"
+          @keydown="handleStartClick"
+        />
+        <img
+          svg-inline
+          src="../../../assets/logoEn.svg"
+          alt="logo"
+          class="o-entry__logo-en"
+          ref="logo-en"
+        />
+      </div>
     </div>
   </div>
 </template>
 <script>
 import gsap from 'gsap'
 import aCircleButton from '@/components/atoms/aCircleButton'
+import aLoadingAnimation from '@/components/atoms/aLoadingAnimation'
 import entry0 from '../../../assets/entry-0.png'
 import entry1 from '../../../assets/entry-1.png'
 
 export default {
+  data() {
+    return {
+      clickEvent: null,
+    }
+  },
   mounted() {
     /* eslint-disable */
     function Slide(width, height, animationPhase) {
@@ -188,17 +202,17 @@ export default {
     }
     //-------
     var root = new THREERoot({
-      fov: 80,
+      fov: 60,
       createCameraControls: false,
     })
     root.renderer.setClearColor(0)
-    root.camera.position.set(0, 0, 40)
+    root.camera.position.set(0, -50, 40)
     var light = new THREE.DirectionalLight()
     light.position.set(0, 0, 1)
     root.scene.add(light)
     // width and height for the THREE.PlaneGeometry that will be used for the two slides
-    var width = window.innerWidth / 10
-    var height = window.innerHeight / 10
+    var width = (window.innerWidth / window.innerHeight) * 100
+    var height = 100
     // slide 1 will be the transition out slide
     var slide = new Slide(width, height, 'out')
     root.scene.add(slide.mesh)
@@ -211,43 +225,124 @@ export default {
     new THREE.ImageLoader().load(entry0, function (image) {
       slide2.setImage(image)
     })
+
+    this.musicList.alien.stop()
+    this.musicList.alien.play()
+
+    //start animation
+    let camera = {
+      y: -50,
+      z: 20,
+    }
+
+    //clickevent
+    this.clickEvent = () => {
+      gsap
+        .timeline({
+          onStart: () => {
+            document.body.removeEventListener('click', this.clickEvent)
+          },
+        })
+        .to(this.$refs.loading.$el, {
+          opacity: 0,
+          pointerEvents: 'none',
+        })
+        .add(slide.transition(), '-=0.4')
+        .add(slide2.transition(), '<')
+        .to(this.$refs.start, {
+          opacity: 1,
+          duration: 1,
+          pointerEvents: 'auto',
+        })
+    }
+
     gsap
-      .timeline({})
+      .timeline({
+        onComplete: () => {
+          document.body.addEventListener('click', this.clickEvent)
+        },
+      })
+      .to(camera, {
+        y: 0,
+        z: 60,
+        duration: 5,
+        onUpdate: () => {
+          root.camera.position.set(0, camera.y, camera.z)
+        },
+      })
+      .from(
+        this.$refs.logo,
+        {
+          y: -150,
+          duration: 2,
+        },
+        '-=4'
+      )
+      .from(
+        this.$refs['logo-en'],
+        {
+          y: 100,
+          duration: 2,
+        },
+        '<'
+      )
       .fromTo(
-        this.$refs.info,
+        this.$refs.loading.$el,
         {
           opacity: 0,
         },
         {
-          duration: 4,
+          duration: 0.5,
           opacity: 1,
-        }
-      )
-      .to(this.$refs.info, {
-        delay: 1.5,
-        duration: 0.5,
-        opacity: 0,
-      })
-      .add(slide.transition(), '-=0.4')
-      .add(slide2.transition(), '<')
-      .to(this.$refs.info, {
-        duration: 0.5,
-        opacity: 1,
-        justifyContent: 'flex-start',
-        onStart: () => {
-          gsap.set(this.$refs.button.$el, {
-            display: 'block',
-          })
         },
-      })
+        '-=3'
+      )
   },
-  components: { aCircleButton },
-  props: ['onStartClick'],
+  components: { aCircleButton, aLoadingAnimation },
+  props: ['onStartClick', 'musicList'],
+  methods: {
+    handleStartClick() {
+      gsap
+        .timeline({
+          onStart: () => {
+            this.musicList.leafshort.play()
+            this.musicList.alien.once('fade', () => {
+              this.musicList.alien.stop()
+            })
+            this.musicList.alien.fade(1, 0, 2000)
+          },
+          onComplete: () => {
+            this.onStartClick()
+          },
+        })
+        .to(this.$refs.logo, {
+          y: -150,
+          duration: 2,
+        })
+        .to(
+          this.$refs['logo-en'],
+          {
+            y: 100,
+            duration: 2,
+          },
+          '<'
+        )
+        .to(
+          this.$refs.start,
+          {
+            opacity: 0,
+            duration: 2,
+          },
+          '<'
+        )
+    },
+  },
 }
 </script>
 <style lang="scss" scoped>
 .o-entry {
-  position: relative;
+  position: absolute;
+  opacity: 1;
 
   &__info {
     position: absolute;
@@ -273,6 +368,54 @@ export default {
   &__button {
     display: none;
     margin-bottom: 30px;
+  }
+
+  &__bottom {
+    gap: 30px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+  }
+
+  &__start {
+    &-button {
+      &-icon {
+        opacity: 0;
+        pointer-events: none;
+        padding: 15px;
+        border-radius: 30%;
+        width: 20px;
+        height: 20px;
+        box-sizing: content-box;
+        background: linear-gradient(
+            0deg,
+            rgba(0, 0, 0, 0.01),
+            rgba(0, 0, 0, 0.01)
+          ),
+          radial-gradient(
+            85.85% 88.54% at 50% 50%,
+            rgba(255, 255, 255, 0.045) 44.43%,
+            rgba(255, 255, 255, 0.216) 100%
+          );
+        box-shadow: 0 3px 5px rgba(0, 0, 0, 0.25),
+          inset 0 1px 2px rgba(255, 255, 255, 0.25);
+
+        &:active {
+          background: linear-gradient(
+              0deg,
+              rgba(0, 0, 0, 0.01),
+              rgba(0, 0, 0, 0.01)
+            ),
+            radial-gradient(
+              54.66% 121.43% at 50% 50%,
+              rgba(255, 255, 255, 0.02) 69.79%,
+              rgba(255, 255, 255, 0.096) 100%
+            );
+          box-shadow: inset 0 3px 3px rgba(0, 0, 0, 0.4),
+            inset 0 -2px 2px rgba(255, 255, 255, 0.2);
+        }
+      }
+    }
   }
 }
 </style>

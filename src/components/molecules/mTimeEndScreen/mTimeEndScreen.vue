@@ -64,6 +64,12 @@ export default {
       position: absolute;
       left: 50%;
       transform: translateX(-50%);
+
+      path {
+        .final & {
+          fill: #99fcff;
+        }
+      }
     }
   }
 
@@ -73,6 +79,14 @@ export default {
     flex-direction: row;
     width: 110%;
     left: -20px;
+
+    svg {
+      g {
+        .final & {
+          stroke: #000833;
+        }
+      }
+    }
   }
 }
 </style>

@@ -6,11 +6,43 @@
     }"
     @click="onOptionClick"
     @keyDown="onOptionClick"
+    @touchstart="() => sfx?.play()"
   >
     <div class="button-container">
       <img
+        v-if="order === 'one'"
         svg-inline
-        :src="require(`@/assets/icons/${order}.svg`)"
+        src="../../../assets/icons/one.svg"
+        alt="points"
+      />
+      <img
+        v-else-if="order === 'two'"
+        svg-inline
+        src="../../../assets/icons/two.svg"
+        alt="points"
+      />
+      <img
+        v-else-if="order === 'three'"
+        svg-inline
+        src="../../../assets/icons/three.svg"
+        alt="points"
+      />
+      <img
+        v-else-if="order === 'four'"
+        svg-inline
+        src="../../../assets/icons/four.svg"
+        alt="points"
+      />
+      <img
+        v-else-if="order === 'five'"
+        svg-inline
+        src="../../../assets/icons/five.svg"
+        alt="points"
+      />
+      <img
+        v-else-if="order === 'six'"
+        svg-inline
+        src="../../../assets/icons/six.svg"
         alt="points"
       />
       <p class="button-text">{{ content.replace(/\\n/g, '\n') }}</p>
@@ -24,7 +56,7 @@ export default {
       this.onClick(this.id, this.content)
     },
   },
-  props: ['order', 'content', 'active', 'onClick', 'id'],
+  props: ['order', 'content', 'active', 'onClick', 'id', 'sfx'],
 }
 </script>
 <style lang="scss" scoped>
@@ -68,6 +100,14 @@ export default {
     padding: 18px;
     gap: 18px;
 
+    svg {
+      * {
+        .final & {
+          stroke: #ce99ff;
+        }
+      }
+    }
+
     p {
       margin: 0;
       font-family: 'Glow Sans TC', sans-serif;
@@ -76,8 +116,12 @@ export default {
       font-size: 16px;
       line-height: 20px;
       letter-spacing: 0.05em;
-      color: #cfcfcf;
+      color: #ffa666;
       white-space: pre-wrap;
+
+      .final & {
+        color: #ce99ff;
+      }
     }
   }
 }

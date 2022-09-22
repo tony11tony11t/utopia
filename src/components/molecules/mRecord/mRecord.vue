@@ -1,6 +1,5 @@
 <template>
   <div class="m-record">
-    <mSiriWave />
     <div class="m-record__wrapper">
       <div class="m-record__style">
         <img
@@ -17,9 +16,15 @@
         />
       </div>
       <div class="m-record__button">
-        <aCircleButton :type="buttonType" :onClick="handleClick" />
-        <p v-if="buttonType === 'record'" class="m-record__button-press">
-          Press
+        <aCircleButton
+          type="record"
+          @touchstart="handleTouchStart"
+          @mousedown="handleTouchStart"
+          @touchend="handleTouchEnd"
+          @mouseup="handleTouchEnd"
+        />
+        <p v-if="recordType === 'ready'" class="m-record__button-press">
+          Press & hold
         </p>
         <p v-else class="m-record__button-time">
           00:00:{{ time < 10 ? `0${time}` : time }}
@@ -68,13 +73,12 @@
 <script>
 import gsap from 'gsap'
 import aCircleButton from '@/components/atoms/aCircleButton'
-import mSiriWave from '../mSiriWave/mSiriWave.vue'
 
 export default {
   data() {
     return {
       recorder: null,
-      buttonType: 'record',
+      recordType: 'ready',
       time: 0,
       addTimeInterval: null,
       blob: null,
@@ -82,7 +86,6 @@ export default {
   },
   components: {
     aCircleButton,
-    mSiriWave,
   },
   props: ['onRecorderEnd'],
   methods: {
@@ -149,19 +152,18 @@ export default {
           '<'
         )
     },
-    handleClick() {
-      if (this.buttonType === 'pause') {
-        this.stopRecorder()
-      } else {
-        console.log('record')
-        this.buttonType = 'pause'
-
-        this.recorder.start(100)
-        this.addTimeInterval = setInterval(this.addTime, 1000)
-      }
+    handleTouchStart() {
+      this.recordType = 'recording'
+      this.recorder.start(100)
+      this.addTimeInterval = setInterval(this.addTime, 1000)
+    },
+    handleTouchEnd() {
+      this.recordType = 'done'
+      this.stopRecorder()
     },
     handleRetryClick() {
       this.time = 0
+      this.recordType = 'ready'
       this.hideResultPanel()
     },
     handleUploadClick() {

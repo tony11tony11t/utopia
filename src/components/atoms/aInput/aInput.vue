@@ -1,10 +1,11 @@
 <template>
-  <div class="a-input">
+  <div class="a-input" ref="input-wrapper">
     <input
       type="text"
       ref="input"
-      placeholder="請輸入您的答案"
-      v-model="value"
+      :placeholder="placeholder || '請輸入你的答案'"
+      :value="value"
+      @input="handleInput"
     />
     <img
       svg-inline
@@ -19,22 +20,58 @@ export default {
   data() {
     return {
       value: '',
+      focusEvent: null,
+      blurEvent: null,
     }
   },
+  props: ['onInputChange', 'placeholder', 'final'],
+  methods: {
+    handleInput(e) {
+      this.value = e.target.value
+      this.onInputChange(e.target.value)
+    },
+  },
   mounted() {
-    this.$refs.input.addEventListener('focus', () => {
-      document.querySelector('.input-border-left').style.stroke = '#FF8133'
-    })
+    this.focusEvent = () => {
+      this.$refs['input-wrapper'].querySelector(
+        '.input-border-left'
+      ).style.stroke = this.final ? '#9c33ff' : '#FF8133'
+    }
 
-    this.$refs.input.addEventListener('blur', () => {
+    this.blurEvent = () => {
       if (this.value !== '') {
-        document.querySelector('.input-border-left').style.stroke = '#FF8133'
-        document.querySelector('.input-border-bottom').style.stroke = '#FF8133'
+        this.$refs['input-wrapper'].querySelector(
+          '.input-border-left'
+        ).style.stroke = this.final ? '#9c33ff' : '#FF8133'
+        this.$refs['input-wrapper'].querySelector(
+          '.input-border-bottom'
+        ).style.stroke = this.final ? '#9c33ff' : '#FF8133'
       } else {
-        document.querySelector('.input-border-left').style.stroke = '#000'
-        document.querySelector('.input-border-bottom').style.stroke = '#000'
+        this.$refs['input-wrapper'].querySelector(
+          '.input-border-left'
+        ).style.stroke = '#000'
+        this.$refs['input-wrapper'].querySelector(
+          '.input-border-bottom'
+        ).style.stroke = '#000'
       }
-    })
+    }
+
+    this.$refs.input.addEventListener('focus', this.focusEvent)
+    this.$refs.input.addEventListener('blur', this.blurEvent)
+  },
+  unmounted() {
+    if (this.$refs['input-wrapper']) {
+      this.$refs['input-wrapper'].querySelector(
+        '.input-border-left'
+      ).style.stroke = '#000'
+      this.$refs['input-wrapper'].querySelector(
+        '.input-border-bottom'
+      ).style.stroke = '#000'
+    }
+    if (this.$refs.input) {
+      this.$refs.input.removeEventListener('focus', this.focusEvent)
+      this.$refs.input.removeEventListener('blur', this.blurEvent)
+    }
   },
 }
 </script>
@@ -57,6 +94,7 @@ export default {
 .a-input {
   position: relative;
   width: 100%;
+  margin-bottom: 50px;
 
   input {
     background-color: transparent;
@@ -80,8 +118,14 @@ export default {
 
   &__border {
     position: absolute;
-    top: 0;
+    top: 3px;
     left: 0;
+
+    path {
+      .final & {
+        stroke: #000833;
+      }
+    }
   }
 }
 </style>

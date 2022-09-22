@@ -7,7 +7,6 @@
       :contact="contact"
       :notes="dots"
     />
-    <mSiriWave />
     <div lass="m-phone-call__bottom">
       <aCircleButton type="phone" :onClick="onClick" />
       <img
@@ -24,6 +23,7 @@ import gsap from 'gsap'
 import TextPlugin from 'gsap/TextPlugin'
 import aStoryHeader from '@/components/atoms/aStoryHeader'
 import aCircleButton from '@/components/atoms/aCircleButton'
+import aRingToneAnimation from '@/components/atoms/aRingToneAnimation'
 import aP5CrossBg from '../../atoms/aP5CrossBg'
 import mSiriWave from '../mSiriWave/mSiriWave.vue'
 
@@ -31,6 +31,7 @@ export default {
   data() {
     return {
       dots: '.',
+      timeline: null,
     }
   },
   mounted() {
@@ -39,7 +40,7 @@ export default {
     const proxy = document.createElement('div')
     proxy.innerText = '.'
 
-    gsap.timeline({ repeat: -1, repeatDelay: 0 }).to(proxy, {
+    this.timeline = gsap.timeline({ repeat: -1, repeatDelay: 0 }).to(proxy, {
       duration: 1,
       ease: 'linear',
       text: '......',
@@ -48,8 +49,11 @@ export default {
       },
     })
   },
+  unmounted() {
+    this.timeline.kill()
+  },
   props: ['contact', 'onClick'],
-  components: { aStoryHeader, aCircleButton, aP5CrossBg, mSiriWave },
+  components: { aStoryHeader, aCircleButton, aP5CrossBg },
 }
 </script>
 <style lang="scss" scoped>

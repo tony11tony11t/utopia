@@ -1,10 +1,49 @@
 <template>
-  <div class="button-wrapper" @click="onClick" @keyDown="onClick">
+  <div
+    class="button-wrapper"
+    @click="onClick"
+    @keyDown="onClick"
+    @touchstart="() => sfx?.play()"
+  >
     <div v-if="!label" class="button-container">
       <span v-for="text in buttonType[type].label.split('')" :key="text">
         {{ text }}
       </span>
-      <img svg-inline class="icon" :src="buttonType[type].src" :alt="type" />
+      <img
+        v-if="type === 'check'"
+        svg-inline
+        class="icon"
+        src="../../../assets/icons/check.svg"
+        :alt="type"
+      />
+      <img
+        v-else-if="type === 'hangUp'"
+        svg-inline
+        class="icon"
+        src="../../../assets/icons/hangUp.svg"
+        :alt="type"
+      />
+      <img
+        v-else-if="type === 'phone'"
+        svg-inline
+        class="icon"
+        src="../../../assets/icons/phone.svg"
+        :alt="type"
+      />
+      <img
+        v-else-if="type === 'close'"
+        svg-inline
+        class="icon close"
+        src="../../../assets/icons/close.svg"
+        :alt="type"
+      />
+      <img
+        v-else-if="type === 'forward'"
+        svg-inline
+        class="icon"
+        src="../../../assets/icons/forward.svg"
+        :alt="type"
+      />
     </div>
     <span v-else class="button-custom">{{ label }}</span>
   </div>
@@ -37,11 +76,7 @@ export default {
       },
     }
   },
-  props: {
-    type: String,
-    onClick: Function,
-    label: String,
-  },
+  props: ['type', 'onClick', 'label', 'sfx'],
 }
 </script>
 <style lang="scss" scoped>
@@ -58,14 +93,18 @@ export default {
       );
     box-shadow: 0 3px 5px rgba(0, 0, 0, 0.25),
       inset 0 1px 2px rgba(255, 255, 255, 0.25);
-    border-radius: 14px;
+    border-radius: 80px;
 
     span {
       font-family: 'Glow Sans TC', sans-serif;
       font-style: normal;
       font-weight: 400;
       font-size: 16px;
-      color: #cfcfcf;
+      color: #ff8133;
+
+      .final & {
+        color: #ce99ff;
+      }
     }
 
     &:active {
@@ -106,5 +145,19 @@ export default {
   left: 50%;
   top: 50%;
   transform: translate(-50%, -50%);
+
+  path {
+    .final & {
+      fill: #ce99ff;
+    }
+  }
+
+  &.close {
+    path {
+      .final & {
+        stroke: #ce99ff;
+      }
+    }
+  }
 }
 </style>

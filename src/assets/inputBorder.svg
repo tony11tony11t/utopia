@@ -1,9 +1,9 @@
 <svg viewBox="0 0 346 27" fill="none" xmlns="http://www.w3.org/2000/svg">
     <g filter="url(#filter0_d_588_6377)">
-        <path class="input-border-left" d="M2 1H15.2167L35.5 23.5" stroke="black" stroke-linecap="round" />
+        <path class="input-border-left" d="M2 1H15.2167L35.5 23.5" stroke="#330020" stroke-linecap="round" />
     </g>
     <g filter="url(#filter1_d_588_6377)">
-        <path class="input-border-bottom" d="M35.5 23.5H344" stroke="black" stroke-linecap="round" />
+        <path class="input-border-bottom" d="M35.5 23.5H344" stroke="#330020" stroke-linecap="round" />
     </g>
     <defs>
         <filter id="filter0_d_588_6377" x="0" y="0" width="37.5" height="26.5" filterUnits="userSpaceOnUse"

@@ -67,6 +67,10 @@ export default {
       &.blue {
         color: #99fcff;
       }
+
+      .final & {
+        color: #99fcff;
+      }
     }
 
     &-texten {

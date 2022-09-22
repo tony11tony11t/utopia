@@ -26,6 +26,7 @@ module.exports = {
     'string-quotes': "single",
     'at-rule-no-unknown': null,
     'indentation': null,
-    'no-descending-specificity': null
+    'no-descending-specificity': null,
+    "selector-class-pattern": null
   }
 };

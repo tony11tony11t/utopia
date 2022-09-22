@@ -1,15 +1,8 @@
 import { createApp } from 'vue'
 import App from './App.vue'
-import UIComponents from './UIComponents.vue'
+import vuetify from './plugins/vuetify'
+import { loadFonts } from './plugins/webfontloader'
 
-import 'ant-design-vue/dist/antd.css'
+loadFonts()
 
-/**
- * main component
- */
-createApp(App).mount('#app')
-
-/**
- * ui library's components
- */
-// const app = createApp(UIComponents).mount('#app')
+createApp(App).use(vuetify).mount('#app')

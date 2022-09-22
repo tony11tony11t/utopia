@@ -28,18 +28,13 @@ export default {
         function drawCross(size) {
           p5.push()
           p5.scale(size)
-          p5.push()
-          p5.translate(0, 6.5)
+          p5.rectMode(p5.CENTER)
           p5.rect(0, 0, 15, 2)
-          p5.pop()
-          p5.push()
-          p5.translate(6.5, 0)
           p5.rect(0, 0, 2, 15)
-          p5.pop()
           p5.pop()
         }
 
-        const time = 300
+        const time = 200
         const c = p5.frameCount % time
 
         if (!this.size) {
@@ -54,12 +49,14 @@ export default {
 
         p5.noStroke()
         p5.fill('#B34501')
-        for (let i = 0; i < p5.windowHeight; i += 50) {
+        const width = p5.windowWidth
+        const height = p5.windowHeight
+        for (let i = 0; i <= height; i += height / 15) {
           p5.push()
           p5.translate(0, i)
-          for (let j = 0; j < p5.windowWidth; j += 50) {
+          for (let j = 0; j <= width; j += width / 15) {
             drawCross(this.nowSize)
-            p5.translate(50, 0)
+            p5.translate(width / 10, 0)
           }
           p5.pop()
         }
@@ -77,7 +74,7 @@ export default {
   height: 100%;
   width: 100%;
   top: 0;
-  background-color: rgba(52, 52, 52, 0.8);
+  background-color: rgba(52, 52, 52, 0.5);
 
   &.transparent {
     background-color: transparent;
