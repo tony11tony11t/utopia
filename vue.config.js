@@ -10,4 +10,10 @@ module.exports = defineConfig({
       .use('vue-svg-inline-loader')
       .loader('vue-svg-inline-loader')
   },
+
+  pluginOptions: {
+    vuetify: {
+			// https://github.com/vuetifyjs/vuetify-loader/tree/next/packages/vuetify-loader
+		}
+  }
 })

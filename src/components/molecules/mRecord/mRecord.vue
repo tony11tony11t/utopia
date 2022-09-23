@@ -47,7 +47,7 @@
     </div>
     <div class="m-record__mask" ref="mask"></div>
     <div class="m-record__retry" ref="retry">
-      <img src="../../../assets/recordControlButton.png" alt="bg" />
+      <img :src="require(`@/assets/recordControlButton.png`)" alt="bg" />
       <div
         class="m-record__retry-logo"
         @click="handleRetryClick"
@@ -58,7 +58,7 @@
       </div>
     </div>
     <div class="m-record__upload" ref="upload">
-      <img src="../../../assets/recordControlButton.png" alt="bg" />
+      <img :src="require(`@/assets/recordControlButton.png`)" alt="bg" />
       <div
         class="m-record__upload-logo"
         @click="handleUploadClick"
@@ -72,6 +72,7 @@
 </template>
 <script>
 import gsap from 'gsap'
+import Recorder from 'js-audio-recorder'
 import aCircleButton from '@/components/atoms/aCircleButton'
 
 export default {
@@ -98,6 +99,7 @@ export default {
     stopRecorder() {
       this.recorder.stop()
       this.buttonType = 'record'
+      this.blob = this.recorder.getWAVBlob()
       this.showResultPanel()
 
       clearInterval(this.addTimeInterval)
@@ -154,7 +156,7 @@ export default {
     },
     handleTouchStart() {
       this.recordType = 'recording'
-      this.recorder.start(100)
+      this.recorder.start()
       this.addTimeInterval = setInterval(this.addTime, 1000)
     },
     handleTouchEnd() {
@@ -172,18 +174,7 @@ export default {
     },
   },
   mounted() {
-    const device = navigator.mediaDevices.getUserMedia({ audio: true })
-    const items = []
-    device.then((stream) => {
-      const recorder = new MediaRecorder(stream)
-      recorder.ondataavailable = (e) => {
-        items.push(e.data)
-        if (recorder.state === 'inactive') {
-          this.blob = new Blob(items, { type: 'audio/wav; codecs=MS_PCM' })
-        }
-      }
-      this.recorder = recorder
-    })
+    this.recorder = new Recorder()
   },
 }
 </script>

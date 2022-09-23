@@ -46,6 +46,8 @@
 <script>
 import { Howl, Howler } from 'howler'
 import FrontendAPI from '@/api'
+import NoSleep from 'nosleep.js'
+import Recorder from 'js-audio-recorder'
 
 import oMap from './components/organisms/oMap'
 import oStory from './components/organisms/oStory'
@@ -64,6 +66,7 @@ export default {
       mapStatus: null,
       musicList: [],
       sfxList: [],
+      noSleep: null,
     }
   },
   methods: {
@@ -73,12 +76,14 @@ export default {
     handlePhoneCallClick(nowMark) {
       this.nowNode = nowMark
       this.state = 'story'
+      this.noSleep.enable()
     },
     handleStartClick() {
       this.state = 'map'
     },
     handleHangUpClick() {
       this.state = 'map'
+      this.noSleep.disable()
     },
     handlePrevClick() {
       this.state = 'map'
@@ -94,14 +99,18 @@ export default {
     },
   },
   async mounted() {
-    navigator.mediaDevices.getUserMedia({ audio: true })
+    Recorder.getPermission().then(() => {
+      console.log('ok')
+    })
     navigator.geolocation.getCurrentPosition(() => {})
 
+    this.noSleep = new NoSleep()
+
     const getMusicPath = (fileName) => {
-      return `${process.env.VUE_APP_SERVER_HOST}/public/music/${fileName}`
+      return `./audios/music/${fileName}`
     }
     const getSfxPath = (fileName) => {
-      return `${process.env.VUE_APP_SERVER_HOST}/public/sfx/${fileName}`
+      return `./audios/sfx/${fileName}`
     }
 
     Howler.unload()
@@ -109,40 +118,33 @@ export default {
     this.musicList = {
       alien: new Howl({
         src: [getMusicPath('alien.mp3')],
-        html5: true,
         preload: true,
         loop: true,
       }),
       leafshort: new Howl({
         src: [getMusicPath('leafshort.mp3')],
-        html5: true,
         preload: true,
       }),
       piano: new Howl({
         src: [getMusicPath('piano.mp3')],
-        html5: true,
         preload: true,
         loop: true,
       }),
       bowl: new Howl({
         src: [getMusicPath('bowl.mp3')],
-        html5: true,
         preload: true,
         loop: true,
       }),
       metrosound: new Howl({
         src: [getMusicPath('metrosound.mp3')],
-        html5: true,
         preload: true,
       }),
       chatter: new Howl({
         src: [getMusicPath('chatter.mp3')],
-        html5: true,
         preload: true,
       }),
       cello: new Howl({
         src: [getMusicPath('cello.mp3')],
-        html5: true,
         preload: true,
         loop: true,
       }),
@@ -151,27 +153,22 @@ export default {
     this.sfxList = {
       'incoming-phone': new Howl({
         src: [getSfxPath('sfx-incoming-phone.mp3')],
-        html5: true,
         preload: true,
       }),
       'map-music': new Howl({
         src: [getSfxPath('sfx-map-music.mp3')],
-        html5: true,
         preload: true,
       }),
       'map-touch': new Howl({
         src: [getSfxPath('sfx-map-touch.mp3')],
-        html5: true,
         preload: true,
       }),
       'node-touch-confirm': new Howl({
         src: [getSfxPath('sfx-node-touch-confirm.mp3')],
-        html5: true,
         preload: true,
       }),
       'phone-end': new Howl({
         src: [getSfxPath('sfx-phone-end.mp3')],
-        html5: true,
         preload: true,
       }),
       'rate-touch': new Howl({
@@ -181,7 +178,6 @@ export default {
       }),
       'recorde-press': new Howl({
         src: [getSfxPath('sfx-recorde-press.mp3')],
-        html5: true,
         preload: true,
       }),
     }

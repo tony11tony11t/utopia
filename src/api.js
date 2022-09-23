@@ -7,10 +7,7 @@ export default function frontendAPI() {
     const params = new Proxy(new URLSearchParams(window.location.search), {
       get: (searchParams, prop) => searchParams.get(prop),
     })
-    const value =
-      process.env.VUE_APP_MODE === 'DEVELOP'
-        ? 'vZWohRkfjUKW8S12HCkcVw'
-        : params.guid
+    const value = params.guid
     return axios.post(`${URL}/api/user/token`, {
       guid: value,
     })

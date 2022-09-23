@@ -122,13 +122,9 @@
     <!-- type 8 -->
     <div v-if="id === 8">
       <div v-show="nowStoryPart?.type === 8" class="o-story__video">
-        <video
-          :src="videoSrc"
-          playsinline
-          preload="auto"
-          ref="final-video"
-          id="final-video"
-        ></video>
+        <video playsinline preload="auto" ref="final-video" id="final-video">
+          <source src="./audios/3mins.mpg" type="video/mpg" />
+        </video>
       </div>
     </div>
 
@@ -204,7 +200,7 @@ export default {
       tempStoryAudio: null,
       finishResult: {},
       // other
-      videoSrc: `${process.env.VUE_APP_SERVER_HOST}/public/3mins.mp4`,
+      videoSrc: `./audios/3mins.mp4`,
       player: null,
     }
   },
@@ -234,7 +230,10 @@ export default {
       }
     },
     showCheckButton() {
-      return this.nowStoryPart?.type === 1 && !this.scriptParameter.AutoNext
+      return (
+        (this.nowStoryPart?.type === 1 && !this.scriptParameter.AutoNext) ||
+        this.nowStoryPart?.type === 9
+      )
     },
     showAnimation(el, from, to) {
       const fromConfig = {
@@ -468,7 +467,7 @@ export default {
                 {
                   source: 'file',
                   options: {
-                    path: `${process.env.VUE_APP_SERVER_HOST}/public/audios/${AudioKey}.mp3`,
+                    path: `./audios/record/${AudioKey}`,
                     release,
                     attack,
                   },
@@ -507,8 +506,6 @@ export default {
               clearInterval(checkTimer)
             }
           }, 1000)
-          video.currentTime = 40
-          video.volume = 0.3
 
           video.addEventListener('timeupdate', () => {
             if (
@@ -560,10 +557,10 @@ export default {
                 y: 0,
                 onStart: () => {
                   if (newStoryPart.questionAudio !== '') {
-                    const url = `${process.env.VUE_APP_SERVER_HOST}${
+                    const url = `./audios${
                       newStoryPart.questionAudio.includes('/')
                         ? newStoryPart.questionAudio
-                        : `/public/audios/${newStoryPart.questionAudio}`
+                        : `/audios/${newStoryPart.questionAudio}`
                     }`
 
                     this.tempStoryAudio = new Howl({
@@ -596,9 +593,6 @@ export default {
               opacity: 0,
               pointerEvents: 'none',
             })
-          }
-
-          if (newStoryPart.type === 1 && !this.scriptParameter.AutoNext) {
             timeline.add(this.showAnimation(this.$refs['check-button'].$el))
           }
 
@@ -700,7 +694,7 @@ export default {
         this.story = d.data.data
 
         this.tempStoryAudio = new Howl({
-          src: [`${process.env.VUE_APP_SERVER_HOST}/public/music/piano.mp3`],
+          src: [`./audio/music/piano.mp3`],
           html5: true,
           mute: true,
           preload: true,
