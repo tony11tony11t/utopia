@@ -6,9 +6,9 @@
     @mousedown="isMouseDown = !isMouseDown"
     @mouseup="isMouseDown = !isMouseDown"
   >
-    {{ a }}
+    <span>{{ firstWord }}</span>
     <img :src="path" alt="" />
-    {{ b }}
+    <span>{{ secondWord }}</span>
   </div>
 </template>
 
@@ -16,8 +16,8 @@
 export default {
   data() {
     return {
-      a: null,
-      b: null,
+      firstWord: null,
+      secondWord: null,
       path: null,
       pic: null,
       isMouseDown: false,
@@ -31,20 +31,20 @@ export default {
 
   mounted() {
     if (this.variant === 'comfirm') {
-      this.a = '確'
-      this.b = '認'
+      this.firstWord = '確'
+      this.secondWord = '認'
       this.path = require(`@/assets/comfirm.svg`)
     } else if (this.variant === 'cancel') {
-      this.a = '取'
-      this.b = '消'
+      this.firstWord = '取'
+      this.secondWord = '消'
       this.path = require(`@/assets/cancel.svg`)
     } else if (this.variant === 'close') {
-      this.a = '關'
-      this.b = '閉'
+      this.firstWord = '關'
+      this.secondWord = '閉'
       this.path = require(`@/assets/close.svg`)
     } else if (this.variant === 'comfirmPhone') {
-      this.a = '確'
-      this.b = '認'
+      this.firstWord = '確'
+      this.secondWord = '認'
       this.path = require(`@/assets/comfirmPhone.svg`)
     }
   },

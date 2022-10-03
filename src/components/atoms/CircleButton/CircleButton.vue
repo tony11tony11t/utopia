@@ -1,9 +1,9 @@
 <!-- eslint-disable vuejs-accessibility/click-events-have-key-events -->
 <template>
   <div @click="onClick">
-    {{ a }}
+    <span>{{ firstWord }}</span>
     <img :src="path" alt="" />
-    {{ b }}
+    <span>{{ secondWord }}</span>
   </div>
 </template>
 
@@ -13,8 +13,8 @@ import { onMounted } from 'vue'
 export default {
   data() {
     return {
-      a: 7,
-      b: 8,
+      firstWord: 7,
+      secondWord: 8,
       path: null,
       pic: null,
     }
@@ -26,20 +26,20 @@ export default {
 
   mounted() {
     if (this.variant === 'answerPhone') {
-      this.a = '接'
-      this.b = '聽'
+      this.firstWord = '接'
+      this.secondWord = '聽'
       this.path = require(`@/assets/phone.svg`)
     } else if (this.variant === 'recording') {
-      this.a = '收'
-      this.b = '音'
+      this.firstWord = '收'
+      this.secondWord = '音'
       this.path = require(`@/assets/speaker.svg`)
     } else if (this.variant === 'pause') {
-      this.a = '暫'
-      this.b = '停'
+      this.firstWord = '暫'
+      this.secondWord = '停'
       this.path = require(`@/assets/pause.svg`)
     } else if (this.variant === 'send') {
-      this.a = '送'
-      this.b = '出'
+      this.firstWord = '送'
+      this.secondWord = '出'
       this.path = require(`@/assets/send.svg`)
     }
   },

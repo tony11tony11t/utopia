@@ -10,6 +10,11 @@
       <SquareBtn variant="comfirm" :onClick="comfirmBtnClick" />
       <SquareBtn variant="close" :onClick="closeBtnClick" />
       <SquareBtn variant="comfirmPhone" :onClick="comfirmPhoneBtnClick" />
+      <TitleDeco
+        :onClick="close"
+        :onClickWord="clickWord"
+        :decoClick="clickDeco"
+      />
     </a-col>
     <!-- <a-col :span="24"> -->
     <!-- <h3>button-來電(固定大小)</h3>
@@ -29,6 +34,7 @@
 import { Col, Row } from 'ant-design-vue'
 import aButton from './components/atoms/CircleButton'
 import SquareBtn from './components/atoms/SquareButton'
+import TitleDeco from './components/atoms/TitleDeco'
 
 export default {
   name: 'App',
@@ -60,12 +66,22 @@ export default {
     comfirmPhoneBtnClick() {
       console.log('執行接電話 onclick函式')
     },
+    close() {
+      console.log('關閉視窗')
+    },
+    clickWord() {
+      console.log('字被點了')
+    },
+    clickDeco() {
+      console.log('deco被點了')
+    },
   },
   components: {
     aRow: Row,
     aCol: Col,
     aButton,
     SquareBtn,
+    TitleDeco,
   },
   mounted() {},
 }
